@@ -1,37 +1,43 @@
 import random
+import pandas as pd
 
 #----------------- Main menu -----------------
 # Main menu
 def main():
+    print("\nBienvenidos a los juegos IABD-A1\n")
+    
     opcion = "-1"
     while(opcion == "-1"):
         print("1. Adivina el número")
         print("2. Piedra, Papel o Tijera")
         print("3. Ahorcado")
-        print("4. Salir")
-        opcion = input("Elija una opción: ")
+        print("4. Salir\n")
+        opcion = input("Elige una opción: ")
         if opcion == "1":
             adivinaNumero()
-            
+            opcion = "-1"
         elif opcion == "2":
             piedraPapelTijera()
-            
+            opcion = "-1"
         elif opcion == "3":
             ahorcado()
-            
+            opcion = "-1"
         elif opcion == "4":
             print("Saliendo...")
         else:
-            print("Opción no válida")
-        opcion = "-1"
+            print("Opción no válida\n")
+            opcion = "-1"
+    print("Ejecución terminada")
+    return
         
         
         
 # ----------------- Adivina numero -----------------
 # Adivina el número: Funcion principal para el loop del juego, genera un numero aleatorio, declara las variables del funcionamiento y pide numero al usuario. Luego printa los mensajes de fin de juego.
 def adivinaNumero():
+    print("\nAdivina el número")
     number = random.randint(1, 1000)
-    print("Adivina el número entre 1 y 1000")
+    print("Escoge un número entre 1 y 1000\n")
     guessed = False
     intents = 0
     while(guessed == False and intents < 10):
@@ -45,12 +51,12 @@ def adivinaNumero():
 # Adivina numero: Funcion auxiliar realizar las comprobaciones del input del usuario e imprimir los mensajes correspondientes. 
 # Retorna el acierto y el numero de intentos para rellamar la funcion dentro del loop del juego usando las variables
 def checkNumber(intents, number):
-    guess = input("Adivina el número: ")
+    guess = input("Tu número...: ")
     guess = checkType(guess)
     if intents == 10:
         print("Has perdido")
     if guess == number:
-        print("Has acertado")
+        print(f"Has acertado en {intents} intentos")
         return intents, True
     elif guess > number:
         print("El número es menor")
@@ -75,8 +81,8 @@ def checkType(guess):
 # ----------------- Piedra, papel o tijera -----------------
 # Funcion principal del juego, inicializa las variables y mantiene el loop del juego hasta que hay un ganador.
 def piedraPapelTijera():
-    print("Piedra, Papel o Tijera")
-    valueOptions = {"1": "Piedra", "2": "Papel", "3": "Tijera"}
+    print("\nPiedra, Papel o Tijera\n")
+    # valueOptions = {"1": "Piedra", "2": "Papel", "3": "Tijera"}
     pptgame = True
     playerPoints = 0
     pythonPoints = 0
@@ -89,10 +95,11 @@ def piedraPapelTijera():
         
         choice = input("Escoge una opción: ")
         
-        # Python elige un de las opciones al azar
+        # Python elige un de las opciones al azar, 
+        ## Se ha hecho como lista en lugar de como diccionario porque al final habira que hacer un random.choice() sobre una lista de claves, por lo que me ha parecido más eficiente así.
         pythonChoice = random.choice(["Piedra", "Papel", "Tijera"])
         
-        # se compprueba el resultado y se actualizan los puntos
+        # se comprueba el resultado y se actualizan los puntos
         playerPoints, pythonPoints  = checkResult(choice, pythonChoice, playerPoints, pythonPoints)
         pptgame = resolveGame(playerPoints, pythonPoints)
     print ("Press ENTER to continue...")
@@ -149,22 +156,26 @@ def resolveGame(playerPoints, pythonPoints):
 
 
 #----------------- Ahorcado -----------------
-# Definimos las variables necesarias, python escoge una palabra al azar y se construyen los "_" del "tablero"
+# se lee el fichero csv que contiene las palabras, se definen las variables necesarias, python escoge una palabra al azar y se construyen los "_" del "tablero"
 def ahorcado():
-    # TODO importar las palabras de un csv
-    wordList = ["hola", "adios", "python", "programacion", "juego", "ahorcado", "pinzas", "luna", "Pozo", "Playa", "Leyenda", "Colorado", "Encorvar", "Asfalto", "Partir", "Carnada", "Casillero", "Encadenado", "Genio", "Frasco", "Enfermo", "Movimiento", "Herida", "Bola", "Diagonal", "Copiar", "Varita", "Tristeza", "Cubrir", "Erosión"]
+    wordList = csvToList()
     word = random.choice(wordList).lower()
     wordprint = []
     for i in range(len(word)):
         wordprint.append("_")
     errors = []
-    figure = {0: "\n", 1: "\n\n\n\n  \ ", 2: "\n\n\n\n/ \ ", 3: "\n\n\n | \n/ \ ", 4: "\n\n\n |\ \n/ \ ", 5: "\n\n\n/|\ \n/ \ ", 6: "\n\n O \n/|\ \n/ \ ", 7: "  ___\n |\n O \n/|\ \n/ \ "}
+    figure = {0: "\n\n", 1: "\n\n\n\n  \ ", 2: "\n\n\n\n/ \ ", 3: "\n\n\n | \n/ \ ", 4: "\n\n\n |\ \n/ \ ", 5: "\n\n\n/|\ \n/ \ ", 6: "\n\n O \n/|\ \n/ \ ", 7: "  ___\n |\n O \n/|\ \n/ \ "}
     
     # Iniciamos el loop principal del juego donde llamamos a las funciones auxiliares
-    while len(errors) <= 7 and "_" in wordprint:
+    while len(errors) < 7 and "_" in wordprint:
+        
         printStatus(figure, wordprint, errors)
         letter = input("Introduce una letra: ").lower()
-        if letter in wordprint:
+        if len(letter) > 1 or not letter.isalpha():
+            print("Solo puedes introducir una letra a la vez y no puedes introducir numeros ni caracteres especiales")
+        elif len(letter) == 0:
+            print("No has introducido ninguna letra...¿estás bien?")
+        elif letter in wordprint:
             print("Ya tienes esa letra como correcta, fíjate un poco...")
         elif letter in word:
             for i in range(len(word)):
@@ -175,23 +186,35 @@ def ahorcado():
                 print("Ya has introducido esa letra, y fallaste, fíjate un poco...")
             else:
                 errors.append(letter)
+        
         if "_" not in wordprint:
             print(f"Muy bien, la palabra era {word}")
             print("Has ganado")
             
-            
-        elif len(errors) == 7:
+        if len(errors) == 7:
             print("Has perdido")
             print(f"La palabra era: {word}")
-            printStatus(figure, wordprint, errors)
-            
+            printStatus(figure, wordprint, errors)   
+    input("Pulsa ENTER para continuar...")    
     return
 
 # Funcion para imprimir el estado del muñeco y el tablero y las letras erroneas
-def printStatus(figure, wordprint, errors):
-    print("\nTu muñeco está así:")
-    print(f"{figure[len(errors)]}\n")
-    print(wordprint)
-    print(f"Letras erróneas:  {errors}\n")
+def printStatus(figure = "", wordprint = "", errors = ""):
+    if len(errors) == 0:
+        print(f"\n{wordprint}")
+        print(f"Letras erróneas:  {errors}\n")
+    elif len(errors) < 7:
+        print("\nTu muñeco está así:")
+        print(f"{figure[len(errors)]}\n")
+        print(wordprint)
+        print(f"Letras erróneas:  {errors}\n")
+    else: 
+        print("\nTe han colgado:")
+        print(f"{figure[len(errors)]}\n")
+    
+# Funcion para leer el fichero csv y devolver una lista con las palabras
+def csvToList():
+    wordsFromCsv = pd.read_csv("words.csv", header=None, names=["word"]) 
+    wordList = wordsFromCsv["word"].tolist()
+    return wordList
 
-ahorcado()
